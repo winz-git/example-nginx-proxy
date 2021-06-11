@@ -1,34 +1,66 @@
-version: "3"
+version: '3'
 
 services:
-  db_node_domain:
-    image: mysql:5.7
+  db:
+    image: mariadb:latest
+    container_name: site1_db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=site1_db
+    expose:
+      - 3306
     volumes:
-      - db_data:/var/lib/mysql
+      - ./db/data:/var/lib/mysql
+      - ./db/sql:/mnt/files/sql
+
+  phpfpm:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: site1_phpfpm
+    restart: always
+    expose:
+      - 9000
+    volumes:
+      - ./src/:/var/www/html
+    depends_on:
+      - db
+
+  web:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: site1_web
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: password
-    container_name: wordpress_db
-
-  wordpress:
-    depends_on:
-      - db_node_domain
-    image: wordpress:latest
+      - VIRTUAL_HOST=www.site1.local
+      - LETSENCRYPT_HOST=www.site1.local
     expose:
       - 80
-    restart: unless-stopped
+      - 443
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - phpfpm
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: site1_phpmyadmin
+    restart: always
+    expose:
+      - 80
     environment:
-      VIRTUAL_HOST: site1.yourdomain.tld
-      LETSENCRYPT_HOST: site1.yourdomain.tld
-      WORDPRESS_DB_HOST: db_node_domain:3306
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: password
-    container_name: wordpress
-volumes:
-  db_data:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+      - MYSQL_ROOT_PASSWORD=root
+      - VIRTUAL_HOST=myadmin.site1.local
+      - LETSENCRYPT_HOST=myadmin.site1.local
+    depends_on:
+      - db
+
 
 networks:
   default:
