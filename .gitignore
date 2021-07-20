@@ -1,2 +1,14 @@
-/site1/src/
-/site2/src/
+.idea
+.DS_Store
+
+# site 1
+/site1/
+!/site1/docker/
+!/site1/docker*.yml
+!/site1/src/wp-content/themes
+
+# site 2
+/site2/
+!/site2/docker/
+!/site2/docker*.yml
+!/site2/src/wp-content/themes
