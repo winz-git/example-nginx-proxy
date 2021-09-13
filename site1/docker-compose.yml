@@ -3,11 +3,11 @@ version: '3'
 services:
   db:
     image: mariadb:latest
-    container_name: site1_db
+    container_name: site2_db
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=site1_db
+      - MYSQL_DATABASE=site2_db
     expose:
       - 3306
     volumes:
@@ -18,7 +18,7 @@ services:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
-    container_name: site1_phpfpm
+    container_name: site2_phpfpm
     restart: always
     expose:
       - 9000
@@ -31,11 +31,11 @@ services:
     build:
       context: ./docker/nginx
       dockerfile: Dockerfile
-    container_name: site1_web
+    container_name: site2_web
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=www.site1.local
-      - LETSENCRYPT_HOST=www.site1.local
+      - VIRTUAL_HOST=www.site2.local
+      - LETSENCRYPT_HOST=www.site2.local
     expose:
       - 80
       - 443
@@ -47,7 +47,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin
-    container_name: site1_phpmyadmin
+    container_name: site2_phpmyadmin
     restart: always
     expose:
       - 80
@@ -56,8 +56,8 @@ services:
       - PMA_PORT=3306
       - PMA_ARBITRARY=1
       - MYSQL_ROOT_PASSWORD=root
-      - VIRTUAL_HOST=myadmin.site1.local
-      - LETSENCRYPT_HOST=myadmin.site1.local
+      - VIRTUAL_HOST=myadmin.site2.local
+      - LETSENCRYPT_HOST=myadmin.site2.local
     depends_on:
       - db
 
